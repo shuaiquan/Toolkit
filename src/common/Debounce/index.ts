@@ -1,9 +1,18 @@
-export function debounce(func: Function, wait: number = 0) {
-    let timer: number = 0;
+export function debounce(func: Function, wait: number = 0, isLeading: boolean = false) {
+    let timer: number;
     return () => {
-        if (timer) {
-            clearTimeout(timer);
+        if (isLeading) {
+            if (timer) {
+                clearTimeout(timer);
+            } else {
+                func();
+            }
+            timer = setTimeout(() => timer = undefined, wait);
+        } else {
+            if (timer) {
+                clearTimeout(timer);
+            }
+            timer = setTimeout(func, wait);
         }
-        timer = setTimeout(func, wait);
     }
 }
