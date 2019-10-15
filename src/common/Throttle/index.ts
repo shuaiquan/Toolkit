@@ -1,13 +1,15 @@
 export function throttle(func: Function, wait: number = 0) {
     let lastInvokedTime: number = 0;
     return () => {
+        const now = performance.now();
         if (lastInvokedTime === 0) {
-            lastInvokedTime = performance.now();
+            lastInvokedTime = now;
+            setTimeout(func, wait);
         } else {
-            const diffTime = performance.now() - lastInvokedTime;
+            const diffTime = now - lastInvokedTime;
             if (diffTime > wait) {
-                lastInvokedTime = performance.now();
-                func();
+                lastInvokedTime = now;
+                setTimeout(func, wait);
             }
         }
     };
