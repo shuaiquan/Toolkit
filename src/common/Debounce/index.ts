@@ -8,48 +8,58 @@ const DEFUALT_OPTIONS = {
 }
 
 export function debounce(func: Function, wait: number = 0, options: Options = DEFUALT_OPTIONS) {
-    let lastExcuteTime: number;
-    let lastInvokeTime: number;
+    // debounced 函数上次调用时间
+    let lastCallTime: number;
+    // 检查 trailingEdge 是否执行的计时器
     let timerId: number;
+
+    // 标记有 trailingEdge 函数待执行
+    let callBackReady: boolean = false;
 
     const { leading, trailing } = options;
 
-    const excute = (time: number) => {
-        lastExcuteTime = time;
+    const invokeFunc = (time: number) => {
+        callBackReady = false;
         func();
     }
 
-    const leadExcute = (time: number) => {
-        if (lastInvokeTime === undefined || time - lastInvokeTime > wait) {
-            excute(time);
+    const leadingEdge = (time: number) => {
+        if (!lastCallTime || time - lastCallTime > wait) {
+            invokeFunc(time);
         }
     }
 
-    const trailExcute = (time: number) => {
-        if (time === lastExcuteTime) {
-            return;
+    const trailingEdge = (time: number) => {
+        timerId = undefined;
+        invokeFunc(time);
+    }
+
+    // 根据 lastCallTime 计算 trailingEdge 函数等待时间
+    const remainingWait = (time: number) => {
+        const timeSinceLastCall = time - lastCallTime;
+        return wait - timeSinceLastCall;
+    }
+
+    // 检查 trailingEdge 是否执行
+    const timerExpired = () => {
+        const currentTime = performance.now();
+        if (callBackReady && (currentTime - lastCallTime >= wait)) {
+            trailingEdge(currentTime);
         }
-        if (time - lastInvokeTime > wait && timerId) {
-            timerId = undefined;
-            excute(time);
-            return;
+        if (!timerId) {
+            timerId = setTimeout(timerExpired, remainingWait(currentTime));
         }
-        clearTimeout(timerId);
-        timerId = setTimeout(() => {
-            const nextTime = performance.now();
-            trailExcute(nextTime);
-        }, wait);
     }
 
     return () => {
-        const now = performance.now();
+        const currentTime = performance.now();
+        callBackReady = true;
         if (leading) {
-            leadExcute(now);
+            leadingEdge(currentTime);
         }
         if (trailing) {
-            trailExcute(now);
+            timerId = setTimeout(timerExpired, wait);
         }
-        lastInvokeTime = now;
-    };
+        lastCallTime = currentTime;
+    }
 }
-
