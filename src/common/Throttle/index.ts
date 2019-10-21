@@ -44,13 +44,24 @@ export function throttle(func: Function, wait: number = 0, options: Options = DE
         return wait - timeSinceLastInvoke;
     }
 
+    // trailing 调用的循环计时器
     const timeExpired = () => {
         const currentTime = performance.now();
-        if (readyCallBack && (currentTime - lastInvokTime) > wait) {
-            trailingEdge(currentTime);
-        }
-        if (!timerId) {
-            timerId = setTimeout(timeExpired, remainingWait(currentTime));
+
+        if (!lastCallTime || currentTime - lastCallTime > wait) {
+            // 新一轮的首次
+            timerId = setTimeout(timeExpired, wait);
+        } else {
+            // 继续当前轮次
+
+            // 先判断本次是否执行
+            if (readyCallBack && (currentTime - lastInvokTime) > wait) {
+                trailingEdge(currentTime);
+            }
+            // 开启本轮的下一次执行计时
+            if (!timerId) {
+                timerId = setTimeout(timeExpired, remainingWait(currentTime));
+            }
         }
     }
 
@@ -61,7 +72,7 @@ export function throttle(func: Function, wait: number = 0, options: Options = DE
             leadingEdge(currentTime);
         }
         if (trailing) {
-            timerId = setTimeout(timeExpired, wait);
+            timeExpired();
         }
         lastCallTime = currentTime;
     };
