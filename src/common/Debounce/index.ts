@@ -34,20 +34,23 @@ export function debounce(func: Function, wait: number = 0, options: Options = DE
         invokeFunc(time);
     }
 
-    // 根据 lastCallTime 计算 trailingEdge 函数等待时间
-    const remainingWait = (time: number) => {
-        const timeSinceLastCall = time - lastCallTime;
-        return wait - timeSinceLastCall;
-    }
-
     // 检查 trailingEdge 是否执行
-    const timerExpired = () => {
+    const timeExpired = () => {
         const currentTime = performance.now();
-        if (callBackReady && (currentTime - lastCallTime >= wait)) {
-            trailingEdge(currentTime);
-        }
-        if (!timerId) {
-            timerId = setTimeout(timerExpired, remainingWait(currentTime));
+
+        // 新一轮的首次
+        if (!lastCallTime || (currentTime - lastCallTime >= wait && !timerId)) {
+            timerId = setTimeout(timeExpired, wait);
+        } else {
+            // 判断 trailing 调用是否执行
+            if (callBackReady && (currentTime - lastCallTime >= wait)) {
+                trailingEdge(currentTime);
+            }
+            // 取消上次 trailing , 重新计时
+            if (timerId) {
+                clearTimeout(timerId);
+                timerId = setTimeout(timeExpired, wait);
+            }
         }
     }
 
@@ -58,7 +61,7 @@ export function debounce(func: Function, wait: number = 0, options: Options = DE
             leadingEdge(currentTime);
         }
         if (trailing) {
-            timerId = setTimeout(timerExpired, wait);
+            timeExpired();
         }
         lastCallTime = currentTime;
     }
