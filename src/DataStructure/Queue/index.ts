@@ -1,3 +1,5 @@
+import PriorityQueue, { PriorityEle } from './PriorityQueue';
+
 const EMPTY_LENGTH = 0;
 
 class BaseQueue<T> {
@@ -22,3 +24,7 @@ class BaseQueue<T> {
 }
 
 export default BaseQueue;
+export {
+    PriorityQueue,
+    PriorityEle
+};
