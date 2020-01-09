@@ -1,1 +1,4 @@
 src/temporary_storage/
+node_modules/
+
+package-lock.json

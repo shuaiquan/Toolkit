@@ -1,0 +1,26 @@
+{
+  "name": "toolkit",
+  "version": "0.0.1",
+  "description": "A toolkit for coding life",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuaiquan/Toolkit.git"
+  },
+  "keywords": [
+    "ts",
+    "front-end"
+  ],
+  "author": "shuaiquan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shuaiquan/Toolkit/issues"
+  },
+  "homepage": "https://github.com/shuaiquan/Toolkit#readme",
+  "dependencies": {
+    "@types/react": "^16.9.17"
+  }
+}
