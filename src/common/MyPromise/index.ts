@@ -4,41 +4,40 @@ enum PromiseStatus {
     Rejected = 'rejected',
 }
 
-interface PromiseFunc<T, K> {
-    (resolve?: ResolveFunc<T>, reject?: RejectedFunc<K>): void
+interface PromiseFunc<T> {
+    (resolve?: ResolveFunc<T>, reject?: RejectedFunc): void
 }
-
 
 interface ResolveFunc<T> {
-    (value: T): void;
+    (value?: T): void;
 }
 
-interface RejectedFunc<K> {
-    (reason: K): void;
+interface RejectedFunc {
+    (reason?: any): void;
 }
 
-interface ThenFunc<T> {
-    (value: T): void;
+interface OnFulFilled<T, U> {
+    (value?: T): U;
 }
 
-interface CatchFunc<K> {
-    (reason: K): void;
+interface OnRejected<U> {
+    (reason: any): U;
 }
 
-class MyPromise<T, K> {
+class MyPromise<T> {
     private status: PromiseStatus = PromiseStatus.Pending;
 
     private resolveResult: T;
-    private resolveCallBacks: ThenFunc<T>[] = [];
+    private resolveCallBacks: OnFulFilled<T, any>[] = [];
 
-    private rejectedResult: K;
-    private rejectedCallBacks: CatchFunc<K>[] = [];
+    private rejectedResult: any;
+    private rejectedCallBacks: OnRejected<any>[] = [];
 
-    constructor(fn: PromiseFunc<T, K>) {
+    constructor(fn: PromiseFunc<T>) {
         fn(this.resolveFunc, this.rejectedFunc);
     }
 
-    private resolveFunc: ResolveFunc<T> = (value: T) => {
+    private resolveFunc: ResolveFunc<T> = (value?: T) => {
         this.status = PromiseStatus.Fulfilled;
         this.resolveResult = value;
         this.resolveCallBacks.forEach(callBack => {
@@ -46,7 +45,7 @@ class MyPromise<T, K> {
         });
     }
 
-    private rejectedFunc: RejectedFunc<K> = (reason: K) => {
+    private rejectedFunc: RejectedFunc = (reason?: any) => {
         this.status = PromiseStatus.Rejected;
         this.rejectedResult = reason;
         this.rejectedCallBacks.forEach(callBack => {
@@ -54,19 +53,51 @@ class MyPromise<T, K> {
         })
     }
 
-    then = (fn: ThenFunc<T>) => {
+    then = <TResult = never>(fn: OnFulFilled<T, TResult>) => {
         if (this.status === PromiseStatus.Pending) {
-            this.resolveCallBacks.push(fn);
+            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
+                try {
+                    this.resolveCallBacks.push((result1) => {
+                        const result2 = fn(result1);
+                        resolve(result2);
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            });
         } else if (this.status === PromiseStatus.Fulfilled) {
-            fn(this.resolveResult);
+            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
+                try {
+                    const result = fn(this.resolveResult);
+                    resolve(result);
+                } catch (e) {
+                    reject(e);
+                }
+            });
         }
     }
 
-    catch = (fn: CatchFunc<K>) => {
+    catch = <TResult = never>(fn: OnRejected<TResult>) => {
         if (this.status === PromiseStatus.Pending) {
-            this.rejectedCallBacks.push(fn);
+            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
+                try {
+                    this.rejectedCallBacks.push((result1) => {
+                        const result2 = fn(result1);
+                        resolve(result2);
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            });
         } else if (this.status === PromiseStatus.Rejected) {
-            fn(this.rejectedResult);
+            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
+                try {
+                    const result = fn(this.rejectedResult);
+                    resolve(result);
+                } catch (e) {
+                    reject(e);
+                }
+            });
         }
     }
 }
