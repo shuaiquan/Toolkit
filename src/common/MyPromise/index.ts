@@ -53,12 +53,12 @@ class MyPromise<T> {
         })
     }
 
-    then = <TResult = never>(fn: OnFulFilled<T, TResult>) => {
+    then = <TResult = never>(fulFilled: OnFulFilled<T, TResult>, rejected: OnRejected<TResult>) => {
         if (this.status === PromiseStatus.Pending) {
             return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
                 try {
                     this.resolveCallBacks.push((result1) => {
-                        const result2 = fn(result1);
+                        const result2 = fulFilled(result1);
                         resolve(result2);
                     });
                 } catch (e) {
@@ -68,7 +68,16 @@ class MyPromise<T> {
         } else if (this.status === PromiseStatus.Fulfilled) {
             return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
                 try {
-                    const result = fn(this.resolveResult);
+                    const result = fulFilled(this.resolveResult);
+                    resolve(result);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        } else if (this.status === PromiseStatus.Rejected) {
+            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
+                try {
+                    const result = rejected(this.rejectedResult);
                     resolve(result);
                 } catch (e) {
                     reject(e);
