@@ -3,22 +3,23 @@ function getUUID() {
 }
 
 export interface Action {
+    [key: string]: any,
     type: string;
 }
 
-type RegisterFunc = <T extends Action>(payload: T) => void;
+type RegisterFunc = (payload: Action) => void;
 
 interface Listener {
     token: string;
     fn: RegisterFunc;
 }
 
-export default class Dispatcher<T extends Action> {
+export default class Dispatcher {
     private listeners: Listener[] = [];
 
     private isPending: { [key: string]: boolean } = {};
 
-    private payload: T = null;
+    private payload: Action = null;
 
     private dispatching: boolean = false;
 
@@ -46,7 +47,7 @@ export default class Dispatcher<T extends Action> {
      * 调用所有注册的 callback , 并将 payload 传递给他们
      * @param payload 
      */
-    dispatch(payload: T) {
+    dispatch(payload: Action) {
         this.dispatching = true;
 
         this.payload = payload;
