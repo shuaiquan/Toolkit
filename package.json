@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/shuaiquan/Toolkit#readme",
   "dependencies": {
-    "@types/react": "^16.9.17"
+    "@types/react": "^16.9.17",
+    "shallowequal": "^1.1.0"
   }
 }
