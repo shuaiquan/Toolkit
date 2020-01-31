@@ -1,6 +1,6 @@
 import React from 'react';
 import ReduceStore from './ReduceStore';
-import shallowequal from 'shallowequal';
+import { shallowEqualObjects } from 'shallow-equal';
 
 interface ReactClass<Props, State> {
     new(props: Props, context: any): React.Component<Props, State>;
@@ -54,7 +54,7 @@ function create<Props, State>(Base: ContainerBaseClass<Props, State>, options: O
 function createPureComponent<Props, State>(Container: ReactClass<Props, State>) {
     return class extends Container {
         shouldComponentUpdate(nextProps: Props, nextState: State) {
-            return !shallowequal(this.props, nextProps) || !shallowequal(this.state, nextState);
+            return !shallowEqualObjects(this.props, nextProps) || !shallowEqualObjects(this.state, nextState);
         }
     }
 }

@@ -1,5 +1,9 @@
 import Dispatcher, { Action } from './Dispatcher';
 
+export interface RemoveListenerFn {
+    remove: () => void;
+}
+
 /**
  * Store 是 Flux 体系中的一个基类，按照其描述它会提供以下几种能力：
  * 
@@ -42,7 +46,7 @@ export default abstract class Store {
      * 
      * @param fn 
      */
-    addEventListener(fn: Function): { remove: () => void } {
+    addEventListener(fn: Function): RemoveListenerFn {
         this.listeners.push(fn);
 
         return {
