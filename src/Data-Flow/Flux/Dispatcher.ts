@@ -79,7 +79,7 @@ export default class Dispatcher {
      * @param tokens 要等待的 tokens 
      */
     waitFor(tokens: string[]) {
-        for (let token in tokens) {
+        for (let token of tokens) {
             if (this.isPending[token]) {
                 // 进入这里表明陷入了循环依赖，提示一下并往下执行
                 // log(`Dispatcher.waitFor(...): Circular dependency detected while waiting for ${token}`);
