@@ -1,6 +1,9 @@
 export interface Action {
-    [key: string]: any;
     type: string;
+}
+
+export interface AnyAction extends Action {
+    [key: string]: any;
 }
 
 export interface Listener {
@@ -8,6 +11,6 @@ export interface Listener {
     fn: Function;
 }
 
-export interface Reducer<State> {
-    (state: State, action: Action): State;
+export interface Reducer<State, A extends Action = Action> {
+    (state: State, action: A): State;
 }
