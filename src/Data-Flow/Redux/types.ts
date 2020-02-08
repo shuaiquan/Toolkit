@@ -14,3 +14,20 @@ export interface Listener {
 export interface Reducer<State, A extends Action = Action> {
     (state: State, action: A): State;
 }
+
+export interface Dispatch {
+    (action: Action): Action;
+}
+
+export interface MiddlewareParam<State> {
+    getState: () => State;
+    dispatch: Dispatch;
+}
+
+export interface MiddlewareResult {
+    (dispatch: Dispatch): Dispatch
+}
+
+export interface Middleware<State> {
+    (param: MiddlewareParam<State>): MiddlewareResult;
+}

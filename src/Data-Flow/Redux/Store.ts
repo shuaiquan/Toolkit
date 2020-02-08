@@ -10,7 +10,7 @@ import { getUUID } from './utils';
  * 4. 完善的参数校验，仅有 TS 的类型检测是否足够
  */
 
-class Store<State> {
+export class Store<State> {
     private state: State = null;
 
     private listeners: Listener[] = [];
