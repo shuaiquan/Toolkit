@@ -31,3 +31,7 @@ export interface MiddlewareResult {
 export interface Middleware<State> {
     (param: MiddlewareParam<State>): MiddlewareResult;
 }
+
+export interface StoreEnHancer<Store> {
+    (store: Store): Store;
+}

@@ -1,5 +1,5 @@
 import { Middleware, MiddlewareParam, MiddlewareResult, Dispatch } from './types';
-import { Store } from './Store';
+import Store from './Store';
 
 export function applyMiddleware<State>(...middlewares: Middleware<State>[]) {
     return (store: Store<State>) => {

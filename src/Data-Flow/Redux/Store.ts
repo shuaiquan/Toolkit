@@ -10,15 +10,16 @@ import { getUUID } from './utils';
  * 4. 完善的参数校验，仅有 TS 的类型检测是否足够
  */
 
-export class Store<State> {
+export default class Store<State> {
     private state: State = null;
 
     private listeners: Listener[] = [];
 
     private reducer: Reducer<State> = null;
 
-    constructor(reducer: Reducer<State>) {
+    constructor(reducer: Reducer<State>, initailState?: State) {
         this.reducer = reducer;
+        this.state = initailState;
     }
 
     getState() {
@@ -76,6 +77,3 @@ export class Store<State> {
     }
 }
 
-export function createStore<T>(reducer: Reducer<T>, initailState?: T, enhancer?: Function) {
-    return new Store(reducer);
-}
