@@ -1,4 +1,4 @@
-import { Middleware, MiddlewareParam, MiddlewareResult, Dispatch } from './types';
+import { Middleware, MiddlewareParam, MiddlewareResult, Dispatch, Action } from './types';
 import Store from './Store';
 
 export function applyMiddleware<State>(...middlewares: Middleware<State>[]) {
@@ -7,19 +7,20 @@ export function applyMiddleware<State>(...middlewares: Middleware<State>[]) {
             return store;
         }
 
-        // 如果是这样定义，为什么要给 middleware 传递 dispatch
-        const dispatch = () => {
+        // middleware 在创建过程中，调用 dispatch 将会抛出异常
+        let dispatch: Dispatch = (action: Action) => {
             throw new Error('Dispatching while constructing your middleware is not allowed. ');
         }
 
         const middlewareParam: MiddlewareParam<State> = {
-            dispatch,
+            dispatch: (action: Action) => dispatch(action),
             getState: store.getState,
         };
 
         const chain = middlewares.map(middleware => middleware(middlewareParam));
 
-        store.dispatch = compose(...chain)(store.dispatch);
+        dispatch = compose(...chain)(store.dispatch);
+        store.dispatch = dispatch;
 
         return store;
     }
