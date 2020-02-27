@@ -39,10 +39,11 @@ class MyPromise<T> {
 
     private resolveFunc: ResolveFunc<T> = (value?: T) => {
         this.status = PromiseStatus.Fulfilled;
-        this.resolveResult = value;
-        this.resolveCallBacks.forEach(callBack => {
-            callBack(value);
-        });
+        if (value instanceof MyPromise) {
+            (value as MyPromise<T>).then(v => this.excuteResolve(v));
+        } else {
+            this.excuteResolve(value);
+        }
     }
 
     private rejectedFunc: RejectedFunc = (reason?: any) => {
@@ -53,7 +54,14 @@ class MyPromise<T> {
         })
     }
 
-    then = <TResult = never>(fulFilled: OnFulFilled<T, TResult>, rejected: OnRejected<TResult>) => {
+    private excuteResolve = (v?: T) => {
+        this.resolveResult = v;
+        this.resolveCallBacks.forEach(callBack => {
+            callBack(v);
+        });
+    }
+
+    then = <TResult = never>(fulFilled: OnFulFilled<T, TResult>, rejected?: OnRejected<TResult>) => {
         if (this.status === PromiseStatus.Pending) {
             return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
                 try {
