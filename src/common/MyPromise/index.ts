@@ -61,61 +61,54 @@ class MyPromise<T> {
         });
     }
 
-    then = <TResult = never>(fulFilled: OnFulFilled<T, TResult>, rejected?: OnRejected<TResult>) => {
-        if (this.status === PromiseStatus.Pending) {
-            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
-                try {
-                    this.resolveCallBacks.push((result1) => {
-                        const result2 = fulFilled(result1);
-                        resolve(result2);
-                    });
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        } else if (this.status === PromiseStatus.Fulfilled) {
-            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
-                try {
-                    const result = fulFilled(this.resolveResult);
-                    resolve(result);
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        } else if (this.status === PromiseStatus.Rejected) {
-            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
-                try {
-                    const result = rejected(this.rejectedResult);
-                    resolve(result);
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        }
+    /**
+     * 注册 fullFilled 或者 rejected 的回调函数
+     */
+    then = <TResult = never>(fulFilled?: OnFulFilled<T, TResult>, rejected?: OnRejected<TResult>) => {
+        return this.registeListener(fulFilled, rejected);
     }
 
-    catch = <TResult = never>(fn: OnRejected<TResult>) => {
-        if (this.status === PromiseStatus.Pending) {
-            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
-                try {
-                    this.rejectedCallBacks.push((result1) => {
-                        const result2 = fn(result1);
-                        resolve(result2);
-                    });
-                } catch (e) {
-                    reject(e);
+    /**
+     * 指定发生错误时的回调函数 （包括 rejected 状态）
+     */
+    catch = <TResult = never>(rejected: OnRejected<TResult>) => {
+        return this.registeListener(undefined, rejected);
+    }
+
+    /**
+     * 内部统一添加 fullFilled 或者 rejected 的回调函数的执行
+     */
+    private registeListener = <TResult = never>(onFulFilled?: OnFulFilled<T, TResult>, onRejected?: OnRejected<TResult>) => {
+        return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
+            try {
+                if (this.status === PromiseStatus.Pending) {
+                    if (onFulFilled) {
+                        this.resolveCallBacks.push((result1) => {
+                            const result2 = onFulFilled(result1);
+                            resolve(result2);
+                        });
+                    }
+                    if (onRejected) {
+                        this.rejectedCallBacks.push((result1) => {
+                            const result2 = onRejected(result1);
+                            resolve(result2);
+                        });
+                    }
+                } else if (this.status === PromiseStatus.Fulfilled) {
+                    if (onFulFilled) {
+                        const result = onFulFilled(this.resolveResult);
+                        resolve(result);
+                    }
+                } else if (this.status === PromiseStatus.Rejected) {
+                    if (onRejected) {
+                        const result = onRejected(this.rejectedResult);
+                        resolve(result);
+                    }
                 }
-            });
-        } else if (this.status === PromiseStatus.Rejected) {
-            return new MyPromise((resolve: ResolveFunc<TResult>, reject: RejectedFunc) => {
-                try {
-                    const result = fn(this.rejectedResult);
-                    resolve(result);
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        }
+            } catch (e) {
+                reject(e);
+            }
+        });
     }
 
     /**
