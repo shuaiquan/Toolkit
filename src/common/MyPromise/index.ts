@@ -109,6 +109,24 @@ class MyPromise<T> {
             });
         }
     }
+
+    /**
+     * 返回一个状态为 fulfilled 的 MyPromise
+     */
+    static resolve<V>(value?: V) {
+        return new MyPromise((resolve: (v: V) => void) => {
+            resolve(value);
+        });
+    }
+
+    /**
+     * 返回一个状态为 rejected 的 MyPromise
+     */
+    static reject<V>(value?: V) {
+        return new MyPromise((resolve: (v: V) => void, reject: (v: V) => void) => {
+            reject(value);
+        });
+    }
 }
 
 export default MyPromise;
