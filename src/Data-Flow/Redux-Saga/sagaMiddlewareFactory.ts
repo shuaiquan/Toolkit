@@ -1,9 +1,19 @@
 import Channel from './channel';
+import { runSaga } from './runSaga';
+import { Dispatch, GetState, ENV } from './type';
 
-export function sagaMiddlewareFactory() {
+export function sagaMiddlewareFactory<T>() {
     const channel = new Channel();
 
-    function sagaMiddleware() {
+    let env: ENV<T>;
+
+    function sagaMiddleware({ dispatch, getState }: { dispatch: Dispatch, getState: GetState<T> }) {
+        env = {
+            channel,
+            dispatch,
+            getState,
+        };
+
         return next => action => {
             // 先继续执行其他中间件，并执行 reducer
             const result = next(action);
@@ -14,8 +24,9 @@ export function sagaMiddlewareFactory() {
         }
     }
 
-    sagaMiddleware.run = () => {
-
+    sagaMiddleware.run = (saga: Generator, ...args: any[]) => {
+        // 将 env 以及 初始Saga 传递给启动函数
+        runSaga(env, saga, ...args);
     }
 
     return sagaMiddleware;
