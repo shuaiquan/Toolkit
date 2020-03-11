@@ -15,6 +15,6 @@ export function matcherFactory(pattern: string) {
         case '*':
             return wildcard;
         default:
-            return string;
+            return string(pattern);
     }
 }
