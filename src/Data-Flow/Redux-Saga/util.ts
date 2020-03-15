@@ -5,3 +5,11 @@ export function remove<T>(array: T[], item: T) {
         array.splice(index, 1);
     }
 }
+
+export function isPromise(value: any) {
+    return false;
+}
+
+export function isIterator(value: any) {
+    return false;
+}

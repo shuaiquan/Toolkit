@@ -1,6 +1,6 @@
 import Channel from './channel';
 import { runSaga } from './runSaga';
-import { Dispatch, GetState, ENV } from './type';
+import { Dispatch, GetState, ENV, Saga } from './type';
 
 export function sagaMiddlewareFactory<T>() {
     const channel = new Channel();
@@ -24,7 +24,7 @@ export function sagaMiddlewareFactory<T>() {
         }
     }
 
-    sagaMiddleware.run = (saga: Generator, ...args: any[]) => {
+    sagaMiddleware.run = (saga: Saga, ...args: any[]) => {
         // 将 env 以及 初始Saga 传递给启动函数
         runSaga(env, saga, ...args);
     }
