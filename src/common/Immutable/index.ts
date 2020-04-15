@@ -1,4 +1,5 @@
 import { deepFreeze, clone, isArray, isObjectLike } from '@s7n/utils';
+import { isArrayOrObject } from './util';
 
 class Immutable {
 
@@ -22,23 +23,27 @@ class Immutable {
     }
 
     /**
-     * 使用 partialData 来局部跟新 data
+     * 使用 partialData 来局部更新 data
      * @param data 要更新的目标
      * @param partialData 要更新的数据
      */
     merge<T extends Object>(data: T, partialData: Partial<T>) {
-        if (isArray(data)) {
+        if (!isObjectLike(data)) {
             throw new Error('The merge method only support object');
         }
 
-        if (isObjectLike(data)) {
-            return {
-                ...data,
-                ...partialData,
-            } as T;
+        let newData: T = clone(data);
+        let hasDifferent: boolean = false;
+        for (const key of Object.keys(partialData)) {
+            // 这里如果发现两个属性值都是对象的话，要进行深度对比，从而不从引用关系上得结论
+            const newValue = isObjectLike(partialData[key]) && isObjectLike(data[key]) ? this.merge(data[key], partialData[key]) : partialData[key];
+            if (newValue !== data[key]) {
+                hasDifferent = true;
+                newData[key] = newValue;
+            }
         }
 
-        return data;
+        return hasDifferent ? this.immutable(newData) : data;
     }
 
     /**
@@ -47,13 +52,18 @@ class Immutable {
      * @param key 属性
      * @param value 属性值
      */
-    set<T, K extends keyof T>(data: T, key: K, value: any) {
+    set<T, K extends keyof T>(data: T, key: K, value: T[K]) {
         if (!isArray(data) && !isObjectLike(data)) {
             throw new Error('The set method only support array or object');
         }
+
+        if (this.isEqual(data[key], value, true)) {
+            return data;
+        }
+
         const newData = clone(data, false);
         newData[key] = value;
-        return newData;
+        return this.immutable(newData);
     }
 
     /**
@@ -64,6 +74,40 @@ class Immutable {
      */
     setIn<T, K extends string | number>(data: T, path: K[], value: any) {
         // TODO
+    }
+
+    /**
+     * 比较两个对象是否一致（默认是浅比较，用于 immutable data）
+     * @param value1 
+     * @param value2 
+     * @param deep 是否进行深度比较
+     */
+    isEqual<T extends Object>(value1: T, value2: T, deep: boolean = false) {
+        // 浅比较，用于 immutable data
+        if (!deep) {
+            return value1 === value2;
+        }
+
+        const keys1 = Object.keys(value1);
+        const keys2 = Object.keys(value2);
+
+        if (keys1 !== keys2) {
+            return false;
+        }
+
+        for (const key of keys1) {
+            const kValue1 = value1[key];
+            const kValue2 = value2[key];
+            if (isArrayOrObject(kValue1) && isArrayOrObject(kValue2)) {
+                if (!this.isEqual(kValue1, kValue2)) {
+                    return false;
+                }
+            } else if (kValue1 !== kValue2) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 
