@@ -73,7 +73,26 @@ class Immutable {
      * @param value 属性值 
      */
     setIn<T, K extends string | number>(data: T, path: K[], value: any) {
-        // TODO
+        if (!isArray(data) && !isObjectLike(data)) {
+            throw new Error('The setIn method only support array or object');
+        }
+
+        if (path.length === 0) {
+            throw new Error(`The path's length should be greater than zero`);
+        }
+
+        const currentKey = path[0] as any;
+        const currentValue = data[currentKey];
+
+        if (path.length === 1) {
+            return this.set(data, currentKey, value);
+        }
+
+        if (!isArray(currentValue) && !isObjectLike(currentValue)) {
+            throw new Error(`The path: ${path.toString()} is not correct!`);
+        }
+
+        return this.setIn(currentValue, path.slice(1), value);
     }
 
     /**
